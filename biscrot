@@ -9,12 +9,13 @@
 var imgbi = require('imgbi');
 var exec = require('child_process').exec;
 var options = {};
-options.expire = '1'; //Most screenshot stuff I send I don't need longer than 1 day.
+options.expire = '1'; //Most screenshot stuff I send I don't need longer than 1 day, so 1 day will be default.
 options.url = 'https://img.bi';
 
 exec("scrot -se 'echo -n $f'",function(error, stdout){
     if (error !== null){
         console.log('ERROR: '+error);
+        process.exit(1);
     }
     else{
         options.file = stdout;
@@ -26,10 +27,12 @@ upload = function(options){
     imgbi.upload(options, function(err, result) {
         if (err) {
             new Error(err); // if there any error during the upload
+            process.exit(1);
         }
         else {
-            console.log(result.viewlink); // link to view image
+            console.log("view link: "+result.viewlink); // link to view image
             exec("xdg-open "+result.viewlink);
+            console.log("remove link: "+result.rmlink); // filename + link to remove image
             //console.log(options.file, result.rmlink); // filename + link to remove image
             //console.log(result.autormlink); // link to autoremove image after first view
         }
