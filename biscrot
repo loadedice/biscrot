@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+/* todo
+ * write this in a way that makes more sense
+ * allow of arguements to modify scrot and img.bi's settings (print autorm url, don't open in browser, copy to clipboard and some more)
+ * auto delete local file, have a log file so you can see all that you've uploaded, log delete links too.
+ */
+
+var imgbi = require('imgbi');
+var exec = require('child_process').exec;
+var options = {};
+options.expire = '1'; //Most screenshot stuff I send I don't need longer than 1 day.
+options.url = 'https://img.bi';
+
+exec("scrot -se 'echo -n $f'",function(error, stdout){
+    if (error !== null){
+        console.log('ERROR: '+error);
+    }
+    else{
+        options.file = stdout;
+        upload(options);
+    }
+})
+
+upload = function(options){
+    imgbi.upload(options, function(err, result) {
+        if (err) {
+            new Error(err); // if there any error during the upload
+        }
+        else {
+            console.log(result.viewlink); // link to view image
+            exec("xdg-open "+result.viewlink);
+            //console.log(options.file, result.rmlink); // filename + link to remove image
+            //console.log(result.autormlink); // link to autoremove image after first view
+        }
+    });
+};
