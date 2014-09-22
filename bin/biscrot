@@ -1,27 +1,35 @@
 #!/usr/bin/env node
 
 /* todo
- * allow of arguements to modify scrot and img.bi's settings (don't open in browser, copy to clipboard and some more)
+ * copy to clipboard
  * have a log file so you can see all that you've uploaded, log delete links too.
  */
 var exec = require('child_process').exec;
 var fs = require('fs');
+var util = require('util');
 
 var imgbi = require('imgbi');
-var argv = require('yargs')
-    .usage("Quickly upload your scrots to img.bi\nUsage: $0")
-    .argv;
-/* The args so far are:
- * --ar, to print the autoremove link
- * -d, to delete the file after uploading it.
- * -o to open in browser afterward
- *  I need to make use of yargs so it prints helpful stuff
- */
+var yargs = require('yargs')
+    .usage("Quickly & easily upload your scrots to img.bi\nUsage: $0")
+    .default('sa','-s')
+    .alias('sa','scrotargs')
+    .alias('h','help')
+    .describe('sa','Arguements to pass to scrot')
+    .describe('ar','print the autoremove link')
+    .describe('o','open in webbrowser after successful upload')
+    .describe('d','delete screenshot after successful upload');
+var argv = yargs.argv;
+
 var options = {};
 options.expire = '1'; //Most screenshot stuff I send I don't need longer than 1 day, so 1 day will be default.
 options.url = 'https://img.bi';
 
-exec("scrot -se 'echo -n $f'",function(error, stdout){
+if(argv.h){
+    console.log(yargs.help());
+    process.exit(0)
+}
+
+exec(util.format("scrot %s -e 'echo -n $f'",argv.sa),function(error, stdout){
     if (error !== null){
         console.log('ERROR: '+error);
         process.exit(1);
@@ -33,6 +41,7 @@ exec("scrot -se 'echo -n $f'",function(error, stdout){
             if (err) {
                 new Error(err); // if there any error during the upload
                 // I should make it retry 3 times before giving up. Which might require me to make this another function.
+                //If an error does happen here, it will leave behind the image
                 process.exit(1);
             }
             else {
@@ -42,7 +51,7 @@ exec("scrot -se 'echo -n $f'",function(error, stdout){
                     exec("xdg-open "+result.viewlink);
                 }
                 if(argv.ar){
-                    console.log("Auto rm link: "+result.autormlink); // link to autoremove image after first view
+                    console.log("Autorm link: "+result.autormlink); // link to autoremove image after first view
                 }
                 if(argv.d){
                     fs.unlinkSync(options.file);
