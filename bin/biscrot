@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 
 /* todo
- * copy to clipboard
  * have a log file so you can see all that you've uploaded, log delete links too.
  */
 var exec = require('child_process').exec;
 var fs = require('fs');
 var util = require('util');
 
+require('copy-paste');
 var imgbi = require('imgbi');
 var yargs = require('yargs')
     .usage("Quickly & easily upload your scrots to img.bi\nUsage: $0")
     .default('sa','-s')
+    .default('b','xdg-run')
     .alias('sa','scrotargs')
-    .alias('h','help')
+    .alias('b','webbrowser')
     .describe('sa','Arguements to pass to scrot')
     .describe('ar','print the autoremove link')
     .describe('o','open in webbrowser after successful upload')
+    .describe('b','webbrowser executable')
     .describe('d','delete screenshot after successful upload');
 var argv = yargs.argv;
 
@@ -24,7 +26,7 @@ var options = {};
 options.expire = '1'; //Most screenshot stuff I send I don't need longer than 1 day, so 1 day will be default.
 options.url = 'https://img.bi';
 
-if(argv.h){
+if(argv.h || argv.help){
     console.log(yargs.help());
     process.exit(0)
 }
@@ -45,11 +47,13 @@ exec(util.format("scrot %s -e 'echo -n $f'",argv.sa),function(error, stdout){
                 process.exit(1);
             }
             else {
+                //I should allow the user to toggle these too. Also I think there is a way with util to not need to use so many if's like I do.
                 console.log("View link: "+result.viewlink); // link to view image
-                console.log("Remove link: "+result.rmlink); // filename + link to remove image
+                console.log("Remove link: "+result.rmlink); // link to remove image
                 if(argv.o){
-                    exec("xdg-open "+result.viewlink);
+                    exec(util.format("%s %s", argv.b,result.viewlink));
                 }
+                copy(result.viewlink);
                 if(argv.ar){
                     console.log("Autorm link: "+result.autormlink); // link to autoremove image after first view
                 }

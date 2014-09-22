@@ -1,8 +1,7 @@
 {
     "name": "biscrot",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "scrot directly to img.bi",
-    "main": "./bin/biscrot",
     "dependencies": {
         "imgbi": "^0.0.4",
         "yargs": "^1.3.1"
